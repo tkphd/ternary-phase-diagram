@@ -12,11 +12,12 @@ from tqdm import tqdm
 
 from pyCinterface import *
 
-density = 201
+density = 200
 colors = ['red', 'green', 'blue', 'gray']
 font = FontProperties()
 font.set_weight('semibold')
 font.set_size(16)
+alignment = {'horizontalalignment': 'center', 'verticalalignment': 'center'}
 
 # Helper functions to convert compositions into (x,y) coordinates
 def simX(x1, x2):
@@ -29,12 +30,12 @@ def euclideanNorm(dx1, dx2):
   return sqrt(dx1**2 + dx2**2)
 
 def boundBy(x, a, b):
-  return (a < x) and (x < b)
+  return (a <= x) and (x <= b)
 
 def labelAxes(n):
   def plot_ticks(start, stop, tick, angle, n):
     plt.text(0.5, -0.075, r'$x_1$', fontsize=18)
-    plt.text(simX(-0.1, 0.55), simY(0.55), r'$x_2$', rotation=60, fontsize=18)
+    plt.text(simX(-0.11, 0.55), simY(0.55), r'$x_2$', rotation=60, fontsize=18)
 
     # from https://stackoverflow.com/a/30975434/5377275
     dx = 3 * tick[0]
@@ -44,13 +45,11 @@ def labelAxes(n):
     y = start[1] * (1 - r) + stop[1] * r
     if angle >= 0:
       for i in range(len(x)):
-        plt.text(x[i] + dx , y[i] + dy, "{0:.1f}".format(r[i]), rotation=angle,
-                 horizontalalignment='center', verticalalignment='center')
+        plt.text(x[i] + dx , y[i] + dy, "{0:.1f}".format(r[i]), rotation=angle, **alignment)
     else:
       midx = 0.5 * (start[0] + stop[0])
       midy = 0.5 * (start[1] + stop[1])
-      plt.text(midx + dx, midy + dy, "0.5", rotation=angle,
-               horizontalalignment='center', verticalalignment='center')
+      plt.text(midx + dx, midy + dy, "0.5", rotation=angle, **alignment)
     x = np.vstack((x, x + tick[0]))
     y = np.vstack((y, y + tick[1]))
     plt.plot(x, y, 'k', lw=1)
@@ -82,17 +81,11 @@ plt.ylim([-0.05, simY(1.05)])
 # triangle bounding the Gibbs simplex
 XS = [0, simX(1,0), simX(0,1), 0]
 YS = [0, simY(0),   simY(1),   0]
-plt.plot(XS, YS, '-k')
+plt.plot(XS, YS, '-k', zorder=2)
 
-plt.text(simX(0.15, 0.15), simY(0.15), 'A',
-         horizontalalignment='center', verticalalignment='center',
-         fontproperties=font, zorder=2)
-plt.text(simX(0.70, 0.15), simY(0.15), 'B',
-         horizontalalignment='center', verticalalignment='center',
-         fontproperties=font, zorder=2)
-plt.text(simX(0.,   1.),   simY(0.70), 'C',
-         horizontalalignment='center', verticalalignment='center',
-         fontproperties=font, zorder=2)
+plt.text(simX(0.15, 0.15), simY(0.15), 'A', fontproperties=font, zorder=2, **alignment)
+plt.text(simX(0.70, 0.15), simY(0.15), 'B', fontproperties=font, zorder=2, **alignment)
+plt.text(simX(0., 1.),     simY(0.70), 'C', fontproperties=font, zorder=2, **alignment)
 
 def ABSolver(x1, x2):
   def system(X):
@@ -294,8 +287,8 @@ tieBC = []
 
 triangle = []
 
-for x1test in tqdm(np.linspace(0, 1, density)):
-  for x2test in np.linspace(0, 1 - x1test, max(1, ceil((1 - x1test) * density))):
+for x1test in tqdm(np.linspace(0.5/density, 1 - 0.5/density, density)):
+  for x2test in np.linspace(0.5/density, 1 - x1test - 0.5/density, max(1, ceil((1 - x1test) * density))):
     x1AB, x2AB, x1BA, x2BA = ABSolver(x1test, x2test)
     x1AC, x2AC, x1CA, x2CA = ACSolver(x1test, x2test)
     x1BC, x2BC, x1CB, x2CB = BCSolver(x1test, x2test)
@@ -397,30 +390,33 @@ for x, y in pureC:
   plt.scatter(x, y, c=colors[2], marker='h', edgecolor=colors[2], s=1.5)
 
 for xa, ya, xb, yb in tieAB:
-  if boundBy(ya, 0, triangle[0][1][0]):
-    plt.scatter(xa, ya, c=colors[0], marker='h', edgecolor=colors[0], s=1.5)
-    plt.scatter(xb, yb, c=colors[1], marker='h', edgecolor=colors[1], s=1.5)
-    plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1)
+  if (boundBy(ya, 0, triangle[0][1][0]) and
+      boundBy(yb, 0, triangle[0][1][1])):
+    plt.scatter(xa, ya, c=colors[0], marker='h', edgecolor=colors[0], s=1.5, zorder=1)
+    plt.scatter(xb, yb, c=colors[1], marker='h', edgecolor=colors[1], s=1.5, zorder=1)
+    plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1, zorder=0)
   else:
-    plt.scatter(xa, ya, marker='h', c=colors[3], edgecolor=colors[3], s=1)
-    plt.scatter(xb, yb, marker='h', c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xa, ya, marker='h', c=colors[3], edgecolor=colors[3], s=1.5, zorder=0)
+    plt.scatter(xb, yb, marker='h', c=colors[3], edgecolor=colors[3], s=1.5, zorder=0)
 
 for xa, ya, xc, yc in tieAC:
-  if boundBy(xa, 0, triangle[0][0][0]):
-    plt.scatter(xa, ya, marker='h', c=colors[0], edgecolor=colors[0], s=1.5)
-    plt.scatter(xc, yc, marker='h', c=colors[2], edgecolor=colors[2], s=1.5)
-    plt.plot([xa, xc], [ya, yc], color="gray", linewidth=0.1)
+  if (boundBy(ya, triangle[0][1][0], 1) and
+      boundBy(yc, triangle[0][1][2], 1)):
+    plt.scatter(xa, ya, marker='h', c=colors[0], edgecolor=colors[0], s=1.5, zorder=1)
+    plt.scatter(xc, yc, marker='h', c=colors[2], edgecolor=colors[2], s=1.5, zorder=1)
+    plt.plot([xa, xc], [ya, yc], color="gray", linewidth=0.1, zorder=0)
   else:
-    plt.scatter(xa, ya, marker='h', c=colors[3], edgecolor=colors[3], s=1)
-    plt.scatter(xc, yc, marker='h', c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xa, ya, marker='h', c=colors[3], edgecolor=colors[3], s=1.5, zorder=0)
+    plt.scatter(xc, yc, marker='h', c=colors[3], edgecolor=colors[3], s=1.5, zorder=0)
 
 for xb, yb, xc, yc in tieBC:
-  if boundBy(xb, triangle[0][0][1], 1):
-    plt.scatter(xb, yb, c=colors[1], marker='h', edgecolor=colors[1], s=1.5)
-    plt.scatter(xc, yc, c=colors[2], marker='h', edgecolor=colors[2], s=1.5)
-    plt.plot([xb, xc], [yb, yc], color="gray", linewidth=0.1)
+  if (boundBy(xb, triangle[0][0][1], 1) and
+      boundBy(xc, triangle[0][0][2], 1)):
+    plt.scatter(xb, yb, c=colors[1], marker='h', edgecolor=colors[1], s=1.5, zorder=1)
+    plt.scatter(xc, yc, c=colors[2], marker='h', edgecolor=colors[2], s=1.5, zorder=1)
+    plt.plot([xb, xc], [yb, yc], color="gray", linewidth=0.1, zorder=0)
   else:
-    plt.scatter(xb, yb, c=colors[3], marker='h', edgecolor=colors[3], s=1)
-    plt.scatter(xc, yc, c=colors[3], marker='h', edgecolor=colors[3], s=1)
+    plt.scatter(xb, yb, c=colors[3], marker='h', edgecolor=colors[3], s=1.5, zorder=0)
+    plt.scatter(xc, yc, c=colors[3], marker='h', edgecolor=colors[3], s=1.5, zorder=0)
 
 plt.savefig("ternary-diagram.png", dpi=400, bbox_inches="tight")
