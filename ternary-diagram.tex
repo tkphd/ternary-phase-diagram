@@ -2,8 +2,8 @@
 \usepackage[margin=1in]{geometry}
 \usepackage{amsmath,amssymb,graphicx,hyperref,mathrsfs,siunitx}
 \usepackage[small,bf]{caption}
-\title{Isothermobaric Cr--Nb--Ni Phase Diagram}
-\author{T. Keller}
+\title{Isothermobaric Ternary Phase Diagrams}
+\author{Trevor Keller}
 \date{\small \today}
 
 \frenchspacing
@@ -12,77 +12,18 @@
 \begin{document}
 \maketitle
 
-\section*{Assertion}
+It is always useful to view the thermodynamic phase diagram as a sanity check on
+kinetic simulations. This is commonly done for binary alloy systems. The process
+for generating a correct ternary phase diagram is less routine; this document
+summarizes the derivation from the system free energy functional as a
+constrained minimization problem.
 
-Nana Ofori-Opoku posited the following system of equations for each pair of phases $\alpha, \beta$
-for a given test point with composition $(x_A, x_B)$:
-
-\begin{align}
-  \label{eqn:noo1}
-  \frac{\partial f_{\alpha}}{\partial x_A^{\alpha}} -
-  \frac{\partial f_{\beta}}{\partial x_A^{\beta}}
-  &= 0\\
-  \label{eqn:noo2}
-  \frac{\partial f_{\alpha}}{\partial x_B^{\alpha}} -
-  \frac{\partial f_{\beta}}{\partial x_B^{\beta}}
-  &= 0\\
-  \label{eqn:noo3}
-  f_{\alpha}(x_A^{\alpha}, x_B^{\alpha}) +
-  \frac{\partial f_{\alpha}}{\partial x_A^{\alpha}}\left(x_A^{\alpha} - x_A^{\beta}\right) +
-  \frac{\partial f_{\alpha}}{\partial x_B^{\alpha}}\left(x_B^{\alpha} - x_B^{\beta}\right) -
-  f_{\beta}(x_A^{\beta}, \partial x_B^{\beta})
-  &= 0\\
-  \label{eqn:noo4}
-  \frac{x_A - x_A^{\beta}}{x_B - x_B^{\beta}} -
-  \frac{x_A^{\alpha} - x_A^{\beta}}{x_B^{\alpha} - x_B^{\beta}}
-  &= 0
-\end{align}
-This system can be solved numerically, and the result -- filtered to exclude phase-compositions
-outside the Gibbs simplex -- is shown in Fig.~\ref{fig:noo-diagram}. The equations correspond to
-\begin{enumerate}
-    \item Equality of chemical potential of component $A$ in both phases.
-    \item Equality of chemical potential of component $B$ in both phases.
-    \item Equality of grand potentials in both phases, where
-      \begin{equation}\label{eqn:gp}
-        \Omega_{\psi} = f_{\psi}(x_A^{\psi}, x_B^{\psi}) +
-                        \frac{\partial f_{\psi}}{\partial x_A^{\psi}}(x_A^{\psi}) +
-                        \frac{\partial f_{\psi}}{\partial x_B^{\psi}}(x_B^{\psi})
-      \end{equation}
-    \item The lever rule for weight fractions, which can be derived from conservation of mass
-          and the fact that the equilibrium volume fractions $\varphi^{\alpha} + \varphi^{\beta} = 1$.
-      \begin{align}
-        \label{eqn:consA}
-        x_A &= x_A^{\alpha}\varphi^{\alpha} +
-               x_A^{\beta} \varphi^{\beta} \\
-        \label{eqn:consB}
-        x_B &= x_B^{\alpha}\varphi^{\alpha} +
-               x_B^{\beta} \varphi^{\beta} \\
-        \label{eqn:lever}
-        \frac{x_A - x_A^{\beta}}{x_A^{\alpha} - x_A^{\beta}} &=
-        \frac{x_B - x_B^{\beta}}{x_B^{\alpha} - x_B^{\beta}}
-      \end{align}
-\end{enumerate}
-
-\newpage
-\begin{figure}[h]
-  \includegraphics[width=\textwidth]{../ternary-diagram}
-  \caption{Ternary diagram computed from Eqns.~\ref{eqn:noo1}--\ref{eqn:noo4}.
-           Red spots correspond to endpoints of tie lines originating in $\gamma$ phase.
-           Green spots correspond to endpoints of tie lines originating in $\delta$ phase.
-           Blue spots correspond to endpoints of tie lines originating in Laves phase.
-  }
-  \label{fig:noo-diagram}
-\end{figure}
-
-\newpage
-\section*{Derivation}
-
-Jim Warren recommended a more fundamental approach, taking the system free energy
-and applying mass conservation as constraints. An exposition of the method is given at
+An exposition of the method is given in part on
 \href{https://math.stackexchange.com/questions/632/validating-a-mathematical-model-lagrange-formulation-and-geometry}
-{math.stackexchange.com}.
+{math.stackexchange.com}. The Python source code in this repository provides a
+complete implementation.
 
-\subsection*{Binary Two-Phase}
+\section*{Binary Two-Phase}
 
 We seek to minimize the free energy of the total system with two constraints:
 
@@ -134,7 +75,7 @@ of equations can be solved to determine the two unknown compositions needed to
 specify the equilibrium tie line containing points $G_A(x_A)$, $G(x)$, and
 $G_B(x_B)$. These are similar to Nana's derivation, but in a reduced system.
 
-\subsection*{Ternary Two-Phase}
+\section*{Ternary Two-Phase}
 
 We seek to minimize the free energy of the total system with three constraints:
 
@@ -220,7 +161,7 @@ $G_A(x_1^A,x_2^A)$, $G(x_1,x_2)$, and $G_B(x_1^B,x_2^B)$. \emph{This represents
   the full set of equations Nana provided.}
 
 \newpage
-\subsection*{Ternary Three-Phase}
+\section*{Ternary Three-Phase}
 
 We seek to minimize the free energy of the total system with three constraints:
 
@@ -310,22 +251,6 @@ These represent equality of the grand potentials between pairs of phases $A-B$ a
   \item This will \emph{only} find the plane of 3-phase coexistence. Any other
         points will need to be found using the 2-phase ternary system of equations.      
 \end{itemize}
-
-\section*{Implementation}
-
-For clarity, let's use the simplest possible free energies: paraboloids of unit curvature,
-centered \SI{2}{\percent} from the simplex boundary.
-
-\section*{Ternary 2-Phase}
-
-Let
-\begin{align}
-  \label{eqn:2Ga}
-  G_A(x_1, x_2) &= (x_1 - 0.02)^2 + 2 * (x_1 - 0.02)*(x_2 - 0.02) + (x_2 - 0.02)^2\\
-  \label{eqn:2Gb}
-  G_B(x_1, x_2) &= (x_1 - 0.98)^2 + 2 * (x_1 - 0.98)*(x_2 - 0.02) + (x_2 - 0.02)^2
-\end{align}
-
 
 
 \end{document}
