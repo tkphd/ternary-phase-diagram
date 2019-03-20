@@ -12,8 +12,8 @@ from tqdm import tqdm
 
 from pyCinterface import *
 
-density = 201
-colors = ['red', 'green', 'blue']
+density = 251
+colors = ['red', 'green', 'blue', 'gray']
 
 # Helper functions to convert compositions into (x,y) coordinates
 def simX(x1, x2):
@@ -44,9 +44,9 @@ plt.plot(XS, YS, '-k')
 font = FontProperties()
 font.set_weight('semibold')
 font.set_size(14)
-plt.text(simX(xe1A(), xe2A()), simY(xe2A()), 'A', horizontalalignment='center', verticalalignment='center', fontproperties=font, color=colors[0])
-plt.text(simX(xe1B(), xe2B()), simY(xe2B()), 'B', horizontalalignment='center', verticalalignment='center', fontproperties=font, color=colors[1])
-plt.text(simX(xe1C(), xe2C()), simY(xe2C()), 'C', horizontalalignment='center', verticalalignment='center', fontproperties=font, color=colors[2])
+plt.text(simX(0.15, 0.15), simY(0.15), 'A', horizontalalignment='center', verticalalignment='center', fontproperties=font)
+plt.text(simX(0.70, 0.15), simY(0.15), 'B', horizontalalignment='center', verticalalignment='center', fontproperties=font)
+plt.text(0.5, simY(0.70), 'C', horizontalalignment='center', verticalalignment='center', fontproperties=font)
 
 def ABSolver(x1, x2):
   def system(X):
@@ -174,6 +174,70 @@ def BCSolver(x1, x2):
   # returns the tuple [x1B, x2B, x1C, x2C]
   return fsolve(func=system, x0=[x1, x2, x1, x2], fprime=jacobian)
 
+def ABCSolver(x1, x2):
+  def system(X):
+    x1A, x2A, x1B, x2B, x1C, x2C = X
+    fA = GA(x1A, x2A)
+    fB = GB(x1B, x2B)
+    fC = GC(x1C, x2C)
+    dfAdx1 = dGAdx1(x1A, x2A)
+    dfAdx2 = dGAdx2(x1A, x2A)
+    dfBdx1 = dGBdx1(x1B, x2B)
+    dfBdx2 = dGBdx2(x1B, x2B)
+    dfCdx1 = dGCdx1(x1C, x2C)
+    dfCdx2 = dGCdx2(x1C, x2C)
+    dx1B = x1A - x1B
+    dx1C = x1A - x1C
+    dx2B = x2A - x2B
+    dx2C = x2A - x2C
+    return [dfAdx1 - dfBdx1,
+            dfAdx1 - dfCdx1,
+            dfAdx2 - dfBdx2,
+            dfAdx2 - dfCdx2,
+            fA + dfAdx1 * dx1B + dfAdx2 * dx2B - fB,
+            fA + dfAdx1 * dx1C + dfAdx2 * dx2C - fC
+           ]
+
+  def jacobian(X):
+    x1A, x2A, x1B, x2B, x1C, x2C = X
+    dfAdx1 = dGAdx1(x1A, x2A)
+    dfAdx2 = dGAdx2(x1A, x2A)
+    dfBdx1 = dGBdx1(x1B, x2B)
+    dfBdx2 = dGBdx2(x1B, x2B)
+    dfCdx1 = dGCdx1(x1C, x2C)
+    dfCdx2 = dGCdx2(x1C, x2C)
+    d2fAdx11 = d2GAdx11()
+    d2fAdx12 = d2GAdx12()
+    d2fAdx22 = d2GAdx22()
+    d2fBdx11 = d2GBdx11()
+    d2fBdx12 = d2GBdx12()
+    d2fBdx22 = d2GBdx22()
+    d2fCdx11 = d2GCdx11()
+    d2fCdx12 = d2GCdx12()
+    d2fCdx22 = d2GCdx22()
+    dx1B = x1A - x1B
+    dx1C = x1A - x1C
+    dx2B = x2A - x2B
+    dx2C = x2A - x2C
+    return [[ d2fAdx11, d2fAdx12,-d2fBdx11,-d2fBdx12, 0, 0],
+            [ d2fAdx11, d2fAdx12,-d2fCdx11,-d2fCdx12, 0, 0],
+            [ d2fAdx12, d2fAdx22, 0, 0,-d2fBdx12,-d2fBdx22],
+            [ d2fAdx12, d2fAdx22, 0, 0,-d2fCdx12,-d2fCdx22],
+            [ d2fAdx11 * dx1B + 2*dfAdx1 + d2fAdx12 * dx2B,
+              d2fAdx12 * dx1B + 2*dfAdx2 + d2fAdx22 * dx2B,
+              -dfBdx1 - dfAdx1,
+              -dfBdx2 - dfAdx2,
+              0, 0],
+            [ d2fAdx11 * dx1C + 2*dfAdx1 + d2fAdx12 * dx2C,
+              d2fAdx12 * dx1C + 2*dfAdx2 + d2fAdx22 * dx2C,
+              0, 0,
+              -dfCdx1 - dfAdx1,
+              -dfCdx2 - dfAdx2]
+           ]
+
+  # returns the tuple [x1A, x2A, x1B, x2B]
+  return fsolve(func=system, x0=[x1, x2, x1, x2, x1, x2], fprime=jacobian)
+
 pureA = []
 pureB = []
 pureC = []
@@ -181,6 +245,8 @@ pureC = []
 tieAB = []
 tieAC = []
 tieBC = []
+
+triangle = []
 
 for x1test in tqdm(np.linspace(0, 1, density)):
   for x2test in np.linspace(0, 1 - x1test, max(1, ceil((1 - x1test) * density))):
@@ -203,6 +269,24 @@ for x1test in tqdm(np.linspace(0, 1, density)):
                     boundBy(x1CB, a, b) and boundBy(x2CB, a, b) and
                     boundBy(x1test, min(x1BC, x1CB), max(x1BC, x1CB)) and
                     boundBy(x2test, min(x2BC, x2CB), max(x2BC, x2CB)))
+
+    # There can be only one three-phase coexistence region.
+
+    if len(triangle) < 1:
+      x1ABC, x2ABC, x1BAC, x2BAC, x1CAB, x2CAB = ABCSolver(x1test, x2test)
+
+      ABCisPhysical = (boundBy(x1ABC, a, b) and boundBy(x2ABC, a, b) and
+                       boundBy(x1BAC, a, b) and boundBy(x2BAC, a, b) and
+                       boundBy(x1CAB, a, b) and boundBy(x2CAB, a, b) and
+                       boundBy(x1test, min((x1ABC, x1BAC, x1CAB)), max((x1ABC, x1BAC, x1CAB))) and
+                       boundBy(x2test, min((x2ABC, x2BAC, x2CAB)), max((x2ABC, x2BAC, x2CAB))) and
+                       boundBy(x1test, min((xe1A(), xe1B(), xe1C())), max((xe1A(), xe1B(), xe1C()))) and
+                       boundBy(x2test, min((xe2A(), xe2B(), xe2C())), max((xe2A(), xe2B(), xe2C()))))
+
+      if ABCisPhysical:
+        triX = (simX(x1ABC, x2ABC), simX(x1BAC, x2BAC), simX(x1CAB, x2CAB), simX(x1ABC, x2ABC))
+        triY = (simY(x2ABC),        simY(x2BAC),        simY(x2CAB),        simY(x2ABC))
+        triangle.append((triX, triY))
 
     # Compute system energies
 
@@ -232,47 +316,65 @@ for x1test in tqdm(np.linspace(0, 1, density)):
       wC = euclideanNorm(x1test - x1BC, x2test - x2BC) / lBC
       fBC = wB * GB(x1BC, x2BC) + wC * GC(x1CB, x2CB)
 
-    energies = np.asarray([fAB, fAC, fBC, fA, fB, fC])
+    energies = np.asarray((fAB, fAC, fBC, fA, fB, fC))
     minIdx = np.argmin(energies)
 
     if minIdx == 0:
-      tieAB.append([simX(x1AB, x2AB), simY(x2AB),
-                    simX(x1BA, x2BA), simY(x2BA)])
+      points = (simX(x1AB, x2AB), simY(x2AB),
+                simX(x1BA, x2BA), simY(x2BA))
+      tieAB.append(points)
     elif minIdx == 1:
-      tieAC.append([simX(x1AC, x2AC), simY(x2AC),
-                    simX(x1CA, x2CA), simY(x2CA)])
+      points = (simX(x1AC, x2AC), simY(x2AC),
+                simX(x1CA, x2CA), simY(x2CA))
+      tieAC.append(points)
     elif minIdx == 2:
-      tieBC.append([simX(x1BC, x2BC), simY(x2BC),
-                    simX(x1CB, x2CB), simY(x2CB)])
+      points = (simX(x1BC, x2BC), simY(x2BC),
+                simX(x1CB, x2CB), simY(x2CB))
+      tieBC.append(points)
     elif minIdx == 3:
-      pureA.append([simX(x1test, x2test), simY(x2test)])
+      pureA.append((simX(x1test, x2test), simY(x2test)))
     elif minIdx == 4:
-      pureB.append([simX(x1test, x2test), simY(x2test)])
+      pureB.append((simX(x1test, x2test), simY(x2test)))
     elif minIdx == 5:
-      pureC.append([simX(x1test, x2test), simY(x2test)])
+      pureC.append((simX(x1test, x2test), simY(x2test)))
+
+for x, y in triangle:
+  plt.plot(x, y, color='black')
 
 for x, y in pureA:
-  plt.scatter(x, y, c=colors[0], edgecolor=colors[0], s=1, alpha=0.1)
+  plt.scatter(x, y, c=colors[0], edgecolor=colors[0], s=1)
 
 for x, y in pureB:
-  plt.scatter(x, y, c=colors[1], edgecolor=colors[1], s=1, alpha=0.1)
+  plt.scatter(x, y, c=colors[1], edgecolor=colors[1], s=1)
 
 for x, y in pureC:
-  plt.scatter(x, y, c=colors[2], edgecolor=colors[2], s=1, alpha=0.1)
+  plt.scatter(x, y, c=colors[2], edgecolor=colors[2], s=1)
 
 for xa, ya, xb, yb in tieAB:
-  plt.scatter(xa, ya, c=colors[1], edgecolor=colors[1], s=1)
-  plt.scatter(xb, yb, c=colors[0], edgecolor=colors[0], s=1)
-  # plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1, alpha=0.1)
+  if boundBy(ya, 0, triangle[0][1][0]):
+    plt.scatter(xa, ya, c=colors[0], edgecolor=colors[0], s=1)
+    plt.scatter(xb, yb, c=colors[1], edgecolor=colors[1], s=1)
+    plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1)
+  else:
+    plt.scatter(xa, ya, c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xb, yb, c=colors[3], edgecolor=colors[3], s=1)
 
-for xa, ya, xb, yb in tieAC:
-  plt.scatter(xa, ya, c=colors[2], edgecolor=colors[2], s=1)
-  plt.scatter(xb, yb, c=colors[0], edgecolor=colors[0], s=1)
-  # plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1, alpha=0.1)
+for xa, ya, xc, yc in tieAC:
+  if boundBy(xa, 0, triangle[0][0][0]):
+    plt.scatter(xa, ya, c=colors[0], edgecolor=colors[0], s=1)
+    plt.scatter(xc, yc, c=colors[2], edgecolor=colors[2], s=1)
+    plt.plot([xa, xc], [ya, yc], color="gray", linewidth=0.1)
+  else:
+    plt.scatter(xa, ya, c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xc, yc, c=colors[3], edgecolor=colors[3], s=1)
 
-for xa, ya, xb, yb in tieBC:
-  plt.scatter(xa, ya, c=colors[2], edgecolor=colors[2], s=1)
-  plt.scatter(xb, yb, c=colors[1], edgecolor=colors[1], s=1)
-  # plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1, alpha=0.1)
+for xb, yb, xc, yc in tieBC:
+  if boundBy(xb, triangle[0][0][1], 1):
+    plt.scatter(xb, yb, c=colors[1], edgecolor=colors[1], s=1)
+    plt.scatter(xc, yc, c=colors[2], edgecolor=colors[2], s=1)
+    plt.plot([xb, xc], [yb, yc], color="gray", linewidth=0.1)
+  else:
+    plt.scatter(xb, yb, c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xc, yc, c=colors[3], edgecolor=colors[3], s=1)
 
 plt.savefig("ternary-diagram.png", dpi=300, bbox_inches="tight")
