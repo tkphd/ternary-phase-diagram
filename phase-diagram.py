@@ -12,8 +12,11 @@ from tqdm import tqdm
 
 from pyCinterface import *
 
-density = 251
+density = 201
 colors = ['red', 'green', 'blue', 'gray']
+font = FontProperties()
+font.set_weight('semibold')
+font.set_size(16)
 
 # Helper functions to convert compositions into (x,y) coordinates
 def simX(x1, x2):
@@ -28,25 +31,68 @@ def euclideanNorm(dx1, dx2):
 def boundBy(x, a, b):
   return (a < x) and (x < b)
 
+def labelAxes(n):
+  def plot_ticks(start, stop, tick, angle, n):
+    plt.text(0.5, -0.075, r'$x_1$', fontsize=18)
+    plt.text(simX(-0.1, 0.55), simY(0.55), r'$x_2$', rotation=60, fontsize=18)
+
+    # from https://stackoverflow.com/a/30975434/5377275
+    dx = 3 * tick[0]
+    dy = 3 * tick[1]
+    r = np.linspace(0, 1, n+1)
+    x = start[0] * (1 - r) + stop[0] * r
+    y = start[1] * (1 - r) + stop[1] * r
+    if angle >= 0:
+      for i in range(len(x)):
+        plt.text(x[i] + dx , y[i] + dy, "{0:.1f}".format(r[i]), rotation=angle,
+                 horizontalalignment='center', verticalalignment='center')
+    else:
+      midx = 0.5 * (start[0] + stop[0])
+      midy = 0.5 * (start[1] + stop[1])
+      plt.text(midx + dx, midy + dy, "0.5", rotation=angle,
+               horizontalalignment='center', verticalalignment='center')
+    x = np.vstack((x, x + tick[0]))
+    y = np.vstack((y, y + tick[1]))
+    plt.plot(x, y, 'k', lw=1)
+
+  # Spatial considerations
+  tick_size = 0.075
+  left = np.r_[0, 0]
+  right = np.r_[1, 0]
+  top = np.r_[simX(0, 1), simY(1)]
+
+  # define vectors for ticks
+  bottom_tick = tick_size * np.r_[0, -1] / n
+  right_tick = sqrt(3) * tick_size * np.r_[1,0.5] * (top - left) / n
+  left_tick = sqrt(3) * tick_size * np.r_[1,0.5] * (top - right) / n
+
+  plot_ticks(left, right, bottom_tick, 0, n)
+  plot_ticks(right, top, right_tick, -60, n)
+  plot_ticks(left, top, left_tick, 60, n)
+
 # Plot phase diagram
 pltsize = 10
 plt.figure(figsize=(pltsize, 0.5 * sqrt(3.) * pltsize))
+plt.gca().set_aspect('equal', adjustable='box')
 plt.title("Ternary Phase Diagram", fontsize=18)
-plt.xlabel(r'$x_1$', fontsize=24)
-plt.ylabel(r'$x_2$', fontsize=24)
-plt.xlim([0, 1])
-plt.ylim([0, simY(1)])
+plt.axis('off')
+labelAxes(10)
+plt.xlim([-0.05, 1.05])
+plt.ylim([-0.05, simY(1.05)])
 # triangle bounding the Gibbs simplex
 XS = [0, simX(1,0), simX(0,1), 0]
 YS = [0, simY(0),   simY(1),   0]
 plt.plot(XS, YS, '-k')
 
-font = FontProperties()
-font.set_weight('semibold')
-font.set_size(14)
-plt.text(simX(0.15, 0.15), simY(0.15), 'A', horizontalalignment='center', verticalalignment='center', fontproperties=font)
-plt.text(simX(0.70, 0.15), simY(0.15), 'B', horizontalalignment='center', verticalalignment='center', fontproperties=font)
-plt.text(0.5, simY(0.70), 'C', horizontalalignment='center', verticalalignment='center', fontproperties=font)
+plt.text(simX(0.15, 0.15), simY(0.15), 'A',
+         horizontalalignment='center', verticalalignment='center',
+         fontproperties=font, zorder=2)
+plt.text(simX(0.70, 0.15), simY(0.15), 'B',
+         horizontalalignment='center', verticalalignment='center',
+         fontproperties=font, zorder=2)
+plt.text(simX(0.,   1.),   simY(0.70), 'C',
+         horizontalalignment='center', verticalalignment='center',
+         fontproperties=font, zorder=2)
 
 def ABSolver(x1, x2):
   def system(X):
@@ -339,42 +385,42 @@ for x1test in tqdm(np.linspace(0, 1, density)):
       pureC.append((simX(x1test, x2test), simY(x2test)))
 
 for x, y in triangle:
-  plt.plot(x, y, color='black')
+  plt.plot(x, y, color='black', zorder=2)
 
 for x, y in pureA:
-  plt.scatter(x, y, c=colors[0], edgecolor=colors[0], s=1)
+  plt.scatter(x, y, c=colors[0], marker='h',edgecolor=colors[0], s=1.5)
 
 for x, y in pureB:
-  plt.scatter(x, y, c=colors[1], edgecolor=colors[1], s=1)
+  plt.scatter(x, y, c=colors[1], marker='h', edgecolor=colors[1], s=1.5)
 
 for x, y in pureC:
-  plt.scatter(x, y, c=colors[2], edgecolor=colors[2], s=1)
+  plt.scatter(x, y, c=colors[2], marker='h', edgecolor=colors[2], s=1.5)
 
 for xa, ya, xb, yb in tieAB:
   if boundBy(ya, 0, triangle[0][1][0]):
-    plt.scatter(xa, ya, c=colors[0], edgecolor=colors[0], s=1)
-    plt.scatter(xb, yb, c=colors[1], edgecolor=colors[1], s=1)
+    plt.scatter(xa, ya, c=colors[0], marker='h', edgecolor=colors[0], s=1.5)
+    plt.scatter(xb, yb, c=colors[1], marker='h', edgecolor=colors[1], s=1.5)
     plt.plot([xa, xb], [ya, yb], color="gray", linewidth=0.1)
   else:
-    plt.scatter(xa, ya, c=colors[3], edgecolor=colors[3], s=1)
-    plt.scatter(xb, yb, c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xa, ya, marker='h', c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xb, yb, marker='h', c=colors[3], edgecolor=colors[3], s=1)
 
 for xa, ya, xc, yc in tieAC:
   if boundBy(xa, 0, triangle[0][0][0]):
-    plt.scatter(xa, ya, c=colors[0], edgecolor=colors[0], s=1)
-    plt.scatter(xc, yc, c=colors[2], edgecolor=colors[2], s=1)
+    plt.scatter(xa, ya, marker='h', c=colors[0], edgecolor=colors[0], s=1.5)
+    plt.scatter(xc, yc, marker='h', c=colors[2], edgecolor=colors[2], s=1.5)
     plt.plot([xa, xc], [ya, yc], color="gray", linewidth=0.1)
   else:
-    plt.scatter(xa, ya, c=colors[3], edgecolor=colors[3], s=1)
-    plt.scatter(xc, yc, c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xa, ya, marker='h', c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xc, yc, marker='h', c=colors[3], edgecolor=colors[3], s=1)
 
 for xb, yb, xc, yc in tieBC:
   if boundBy(xb, triangle[0][0][1], 1):
-    plt.scatter(xb, yb, c=colors[1], edgecolor=colors[1], s=1)
-    plt.scatter(xc, yc, c=colors[2], edgecolor=colors[2], s=1)
+    plt.scatter(xb, yb, c=colors[1], marker='h', edgecolor=colors[1], s=1.5)
+    plt.scatter(xc, yc, c=colors[2], marker='h', edgecolor=colors[2], s=1.5)
     plt.plot([xb, xc], [yb, yc], color="gray", linewidth=0.1)
   else:
-    plt.scatter(xb, yb, c=colors[3], edgecolor=colors[3], s=1)
-    plt.scatter(xc, yc, c=colors[3], edgecolor=colors[3], s=1)
+    plt.scatter(xb, yb, c=colors[3], marker='h', edgecolor=colors[3], s=1)
+    plt.scatter(xc, yc, c=colors[3], marker='h', edgecolor=colors[3], s=1)
 
-plt.savefig("ternary-diagram.png", dpi=300, bbox_inches="tight")
+plt.savefig("ternary-diagram.png", dpi=400, bbox_inches="tight")
