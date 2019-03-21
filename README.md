@@ -58,3 +58,11 @@ required to evaluate a function, you will also need to modify
 ```bash
   $ make
 ```
+
+If things aren't making sense, it might make sense to visualize your free
+energy landscape. The utility file [ternary-landscape.py](ternary-landscape.py)
+will convert your free energy landscape to a grayscale contour plot. Run
+
+```bash
+  $ python ternary-landscape.py
+```
