@@ -4,6 +4,9 @@ This repository presents the math and code required to construct the
 thermodynamic phase diagram for a ternary alloy system containing two or three
 phases.
 
+![example-diagram](example-diagram.png)
+*An example of a ternary phase diagram*
+
 A Makefile is provided to build both the documentation and a shared library
 required to efficiently crunch the numbers. The
 [derivation](ternary-diagram.tex) is written in LaTeX, while the
