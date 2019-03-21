@@ -51,16 +51,6 @@ d2GCdx11 = diff(GC, x1, x1)
 d2GCdx12 = diff(GC, x1, x2)
 d2GCdx22 = diff(GC, x2, x2)
 
-# Define lever rule equations, cf. TKR4p160-161
-#
-# For a ternary coexistence triangle, this system takes two line
-# segments---AB from a vertex to the opposite edge and CD between the
-# other two vertices---and returns the (xA, xB) coordinates of the
-# intersection. This is critical for evaluation of the phase fractions.
-
-levers = solve_linear_system(Matrix( ((yo - yb, xb - xo, xb * yo - xo * yb),
-                                      (yc - yd, xd - xc, xd * yc - xc * yd)) ), x, y)
-
 # Generate numerically efficient C-code
 
 codegen(
@@ -79,9 +69,6 @@ codegen(
         # Second derivatives
         ('d2GAdx11', d2GAdx11), ('d2GAdx12', d2GAdx12), ('d2GAdx22', d2GAdx22),
         ('d2GBdx11', d2GBdx11), ('d2GBdx12', d2GBdx12), ('d2GBdx22', d2GBdx22),
-        ('d2GCdx11', d2GCdx11), ('d2GCdx12', d2GCdx12), ('d2GCdx22', d2GCdx22),
-        # Lever rule compositions
-        ('xAintersect', levers[x]),
-        ('xBintersect', levers[y])
+        ('d2GCdx11', d2GCdx11), ('d2GCdx12', d2GCdx12), ('d2GCdx22', d2GCdx22)
     ],
     language='C', prefix='paraboloids', project='paraboloids', to_files=True)

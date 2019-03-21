@@ -87,13 +87,3 @@ d2GCdx12.restype = c_double
 
 d2GCdx22 = paraboloids.d2GCdx22
 d2GCdx22.restype = c_double
-
-# Intersection point for ternary lever rules
-
-xAintersect = paraboloids.xAintersect
-xAintersect.argtypes = ([c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double])
-xAintersect.restype = c_double
-
-xBintersect = paraboloids.xBintersect
-xBintersect.argtypes = ([c_double, c_double, c_double, c_double, c_double, c_double, c_double, c_double])
-xBintersect.restype = c_double
