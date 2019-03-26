@@ -25,231 +25,364 @@ complete implementation.
 
 \section*{Binary Two-Phase}
 
-We seek to minimize the free energy of the total system with two constraints:
+Consider a binary system with two phases, the free energies of which are defined
+by the functions $G_{\alpha}(x)$ and $G_{\beta}(x)$. The system will have volume
+fraction $v_{\alpha}$ of phase $\alpha$ and $v_{\beta}$ of phase $\beta$. We
+seek to determine the equilibrium phase compositions ($x_{\alpha}$, $x_{\beta}$)
+and volume fractions that minimize the free energy of the total system, subject
+to two constraints. To do so, we'll make use of Lagrange multipliers.
 
 \begin{align}
-  G(x_A, x_B) &= f_A G_A(x_A) + f_B G_B(x_B)\\
-  f_A + f_B &= 1\\
-  f_A x_A + f_B x_B &= x
+  G(x_{\alpha}, x_{\beta}) &= v_{\alpha} G_{\alpha}(x_{\alpha})
+                            + v_{\beta} G_{\beta}(x_{\beta})\\
+  v_{\alpha} x_{\alpha} + v_{\beta} x_{\beta} &= x\\
+  v_{\alpha} + v_{\beta} &= 1
 \end{align}
-where A and B label phases, 1 and 2 label components, and $x$ is the system composition.
+where $x$ is the system composition. The system functional and integrand are
 
-The system functional and integrand are
 \begin{align}
-  \mathcal{S}[x_A, x_B, f_A, f_B] &= \int\limits_V\mathcal{L}\mathrm{d}V\\
-  \mathcal{L}(x_A, x_B, f_A, f_B) &= f_A G_A(x_A) + f_B G_B(x_B) - \lambda_1(f_A x_A + f_B x_B - x) - \lambda_2(f_A + f_B - 1).
+  \mathcal{L}[x_{\alpha}, x_{\beta}, v_{\alpha}, v_{\beta}, \lambda_1, \lambda_2]
+  &= \int\limits_VF\mathrm{d}V\\
+  F(x_{\alpha}, x_{\beta}, v_{\alpha}, v_{\beta}, \lambda_1, \lambda_2)
+  &= v_{\alpha} G_{\alpha}(x_{\alpha}) + v_{\beta} G_{\beta}(x_{\beta})
+    - \lambda_1(v_{\alpha} x_{\alpha} + v_{\beta} x_{\beta} - x)
+    - \lambda_2(v_{\alpha} + v_{\beta} - 1).
 \end{align}
-
 Therefore, the system of Euler-Lagrange Equations is
 
 \begin{align}
   \label{eqn:el1}
-  \frac{\delta\mathcal{S}}{\delta x_A} = \frac{\partial\mathcal{L}}{\partial x_A} = 0 &= f_A \frac{\partial G_A}{\partial x_A} - \lambda_1 f_A\\
+  \frac{\delta\mathcal{L}}{\delta x_{\alpha}} = \frac{\partial F}{\partial x_{\alpha}} = 0
+  &= v_{\alpha} \frac{\partial G_{\alpha}}{\partial x_{\alpha}} - \lambda_1 v_{\alpha}\\
   \label{eqn:el2}
-  \frac{\delta\mathcal{S}}{\delta x_B} = \frac{\partial\mathcal{L}}{\partial x_B} = 0 &= f_B \frac{\partial G_B}{\partial x_B} - \lambda_1 f_B\\
+  \frac{\delta\mathcal{L}}{\delta x_{\beta}} = \frac{\partial F}{\partial x_{\beta}} = 0
+  &= v_{\beta} \frac{\partial G_{\beta}}{\partial x_{\beta}} - \lambda_1 v_{\beta}\\
   \label{eqn:el3}
-  \frac{\delta\mathcal{S}}{\delta f_A} = \frac{\partial\mathcal{L}}{\partial f_A} = 0 &= G_A(x_A) - \lambda_1x_A - \lambda_2\\
+  \frac{\delta\mathcal{L}}{\delta v_{\alpha}} = \frac{\partial F}{\partial v_{\alpha}} = 0
+  &= G_{\alpha}(x_{\alpha}) - \lambda_1x_{\alpha} - \lambda_2\\
   \label{eqn:el4}
-  \frac{\delta\mathcal{S}}{\delta f_B} = \frac{\partial\mathcal{L}}{\partial f_B} = 0 &= G_B(x_B) - \lambda_1x_B - \lambda_2
+  \frac{\delta\mathcal{L}}{\delta v_{\beta}} = \frac{\partial F}{\partial v_{\beta}} = 0
+  &= G_{\beta}(x_{\beta}) - \lambda_1x_{\beta} - \lambda_2
 \end{align}
-
-Assuming non-zero $f_A$ and $f_B$ (hence no division-by-zero), Eqns.~\ref{eqn:el1}~\&~\ref{eqn:el2} give
+Solving Eqns.~\ref{eqn:el1}~\&~\ref{eqn:el2} for $\lambda_1$ gives
 
 \begin{align}
-  \lambda_1 &= \frac{\partial G_A}{\partial x_A}\\
-  \lambda_1 &= \frac{\partial G_B}{\partial x_B}\\
+  \lambda_1 &= \frac{\partial G_{\alpha}}{\partial x_{\alpha}}
+             = \frac{\partial G_{\beta}}{\partial x_{\beta}}\\
   \label{eqn:chempot}
-  \therefore \frac{\partial G_A}{\partial x_A} &= \frac{\partial G_B}{\partial x_B}.
+  \therefore \frac{\partial G_{\alpha}}{\partial x_{\alpha}} &=
+             \frac{\partial G_{\beta}}{\partial x_{\beta}}.
 \end{align}
+Solving Eqns.~\ref{eqn:el3}$~\&~$\ref{eqn:el4} for $\lambda_2$ and substituting
+Eqn.~\ref{eqn:chempot} gives
 
-Subtracting Eqns.~\ref{eqn:el3}$-$\ref{eqn:el4} gives
 \begin{align}
-  G_A(x_A) - G_B(x_B) &= \lambda_1(x_A - x_B)\\
+  \lambda_2 &= G_{\alpha}(x_{\alpha})
+             - \frac{\partial G_{\alpha}}{\partial x_{\alpha}} x_{\alpha}
+             = G_{\beta}(x_{\beta})
+             - \frac{\partial G_{\alpha}}{\partial x_{\alpha}} x_{\beta}\\
   \label{eqn:grandpot}
-  \therefore G_B(x_B) &= G_A(x_A) - \frac{\partial G_A}{\partial x_A}\left(x_A - x_B\right).
+  \therefore G_{\beta}(x_{\beta}) &= G_{\alpha}(x_{\alpha})
+                                   - \frac{\partial G_{\alpha}}{\partial x_{\alpha}}
+                                     \left(x_{\alpha} - x_{\beta}\right).
 \end{align}
-
 Eqn.~\ref{eqn:chempot} represents equality of chemical potential, while
 Eqn.~\ref{eqn:grandpot} represents equality of grand potential energy. This pair
 of equations can be solved to determine the two unknown compositions needed to
-specify the equilibrium tie line containing points $G_A(x_A)$, $G(x)$, and
-$G_B(x_B)$.
+specify the common tangent line containing points $G_{\alpha}(x_{\alpha})$,
+$G(x)$, and $G_{\beta}(x_{\beta})$.
 
+\newpage
 \section*{Ternary Two-Phase}
 
-We seek to minimize the free energy of the total system with three constraints:
+Consider a ternary system with two phases, the free energies of which are
+defined by the functions $G_{\alpha}(x_1, x_2)$ and $G_{\beta}(x_1, x_2)$. The
+system will have volume fraction $v_{\alpha}$ of phase $\alpha$ and $v_{\beta}$
+of phase $\beta$. We seek to determine the equilibrium phase compositions
+($x_1^{\alpha}, x_2^{\alpha}, x_1^{\beta}, x_2^{\beta}$) and volume fractions
+that minimize the free energy of the total system, subject to three constraints.
+Unlike the binary case, we must make use of the constraints directly by
+including Euler-Lagrange equations with respect to the Lagrange multipliers.
+This is because the common tangent \emph{line} between the two points does not
+completely specify the equilibrium tangent \emph{plane}.
 
 \begin{align}
-  G(x_1^A, x_2^A, x_1^B, x_2^B) &= f_A G_A(x_1^A,x_2^A) + f_B G_B(x_1^B, x_2^B)\\
-  f_A x_1^A + f_B x_1^B &= x_1\\
-  f_A x_2^A + f_B x_2^B &= x_2\\
-  f_A + f_B &= 1
+  G(x_1^{\alpha}, x_2^{\alpha}, x_1^{\beta}, x_2^{\beta})
+  &= v_{\alpha} G_{\alpha}(x_1^{\alpha},x_2^{\alpha})
+   + v_{\beta} G_{\beta}(x_1^{\beta}, x_2^{\beta})\\
+  v_{\alpha} x_1^{\alpha} + v_{\beta} x_1^{\beta} &= x_1\\
+  v_{\alpha} x_2^{\alpha} + v_{\beta} x_2^{\beta} &= x_2\\
+  v_{\alpha} + v_{\beta} &= 1
 \end{align}
-where A and B label phases, 1 and 2 label components, $x_1$ and $x_2$ are the system compositions,
-and compositions with labels $x_i^j$ represent the composition of component $i$ in phase $j$.
-
-The integrand is
+where A and B label phases, 1 and 2 label components, $x_1$ and $x_2$ are the
+system compositions, and compositions with labels $x_i^j$ represent the
+composition of component $i$ in phase $j$. The integrand is
 
 \begin{align}
   \nonumber
-  \mathcal{L}(x_1^A, x_2^A, x_1^B, x_2^B) &= f_A G_A(x_1^A, x_2^A) + f_B G_B(x_1^B, x_2^B)\\
+  F(x_1^{\alpha}, x_2^{\alpha}, x_1^{\beta}, x_2^{\beta})
+  &= v_{\alpha} G_{\alpha}(x_1^{\alpha}, x_2^{\alpha})
+   + v_{\beta} G_{\beta}(x_1^{\beta}, x_2^{\beta})\\
   \nonumber
-                                          &- \lambda_1(f_A x_1^A + f_B x_1^B - x_1)\\
+  &- \lambda_1(v_{\alpha} x_1^{\alpha} + v_{\beta} x_1^{\beta} - x_1)\\
   \nonumber
-                                          &- \lambda_2(f_A x_2^A + f_B x_2^B - x_2)\\
-                                          &- \lambda_3(f_A + f_B - 1)
+  &- \lambda_2(v_{\alpha} x_2^{\alpha} + v_{\beta} x_2^{\beta} - x_2)\\
+  &- \lambda_3(v_{\alpha} + v_{\beta} - 1)
 \end{align}
-
 The system of Euler-Lagrange Equations becomes
 
 \begin{align}
   \label{eqn:2el1}
-  \frac{\partial\mathcal{L}}{\partial x_1^A} = 0 &= f_A \frac{\partial G_A}{\partial x_1^A} - \lambda_1 f_A\\
+  \frac{\partial F}{\partial x_1^{\alpha}} = 0
+  &= v_{\alpha} \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}
+   - \lambda_1 v_{\alpha}\\
   \label{eqn:2el2}
-  \frac{\partial\mathcal{L}}{\partial x_1^B} = 0 &= f_B \frac{\partial G_B}{\partial x_1^B} - \lambda_1 f_B\\
+  \frac{\partial F}{\partial x_1^{\beta}} = 0
+  &= v_{\beta} \frac{\partial G_{\beta}}{\partial x_1^{\beta}}
+   - \lambda_1 v_{\beta}\\
   \label{eqn:2el3}
-  \frac{\partial\mathcal{L}}{\partial x_2^A} = 0 &= f_A \frac{\partial G_A}{\partial x_2^A} - \lambda_2 f_A\\
+  \frac{\partial F}{\partial x_2^{\alpha}} = 0
+  &= v_{\alpha} \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}
+   - \lambda_2 v_{\alpha}\\
   \label{eqn:2el4}
-  \frac{\partial\mathcal{L}}{\partial x_2^B} = 0 &= f_B \frac{\partial G_B}{\partial x_2^B} - \lambda_2 f_B\\
+  \frac{\partial F}{\partial x_2^{\beta}} = 0
+  &= v_{\beta} \frac{\partial G_{\beta}}{\partial x_2^{\beta}}
+   - \lambda_2 v_{\beta}\\
   \label{eqn:2el5}
-  \frac{\partial\mathcal{L}}{\partial f_A} = 0 &= G_A - \lambda_1 x_1^A - \lambda_2 x_2^A - \lambda_3\\
+  \frac{\partial F}{\partial v_{\alpha}} = 0
+  &= G_{\alpha} - \lambda_1 x_1^{\alpha} - \lambda_2 x_2^{\alpha}
+   - \lambda_3\\
   \label{eqn:2el6}
-  \frac{\partial\mathcal{L}}{\partial f_B} = 0 &= G_B - \lambda_1 x_1^B - \lambda_2 x_2^B - \lambda_3
+  \frac{\partial F}{\partial v_{\beta}} = 0
+  &= G_{\beta} - \lambda_1 x_1^{\beta} - \lambda_2 x_2^{\beta}
+   - \lambda_3\\
+  \label{eqn:2el7}
+  \frac{\partial F}{\partial \lambda_1} = 0
+  &= v_{\alpha} x_1^{\alpha} + v_{\beta} x_1^{\beta} - x_1\\
+  \label{eqn:2el8}
+  \frac{\partial F}{\partial \lambda_2} = 0
+  &= v_{\alpha} x_2^{\alpha} + v_{\beta} x_2^{\beta} - x_2\\
+  \label{eqn:2el9}
+  \frac{\partial F}{\partial \lambda_3} = 0
+  &= v_{\alpha}  + v_{\beta} - 1
 \end{align}
-
-Assuming non-zero $f_A$ and $f_B$ (to prevent division by zero), combining Eqns.~\ref{eqn:2el1}~\&~\ref{eqn:2el2} gives
+Solving Eqns.~\ref{eqn:2el1}~\&~\ref{eqn:2el2} for $\lambda_1$ gives
 
 \begin{align}
-  \lambda_1 &= \frac{\partial G_A}{\partial x_1^A}\\
-  \lambda_1 &= \frac{\partial G_B}{\partial x_1^B}\\
+  \lambda_1 &= \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}
+             = \frac{\partial G_{\beta}}{\partial x_1^{\beta}}\\
   \label{eqn:chempot1}
-  \therefore \frac{\partial G_A}{\partial x_1^A} &= \frac{\partial G_B}{\partial x_1^B}
+  \therefore \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}
+          &= \frac{\partial G_{\beta}}{\partial x_1^{\beta}}
 \end{align}
 This represents equality of chemical potential of component 1.
-Likewise, Eqns.~\ref{eqn:2el3}~\&~\ref{eqn:2el4} gives
+Likewise, solving Eqns.~\ref{eqn:2el3}~\&~\ref{eqn:2el4} for $\lambda_2$ gives
 
 \begin{align}
-  \lambda_2 &= \frac{\partial G_A}{\partial x_2^A}\\
-  \lambda_2 &= \frac{\partial G_B}{\partial x_2^B}\\
+  \lambda_2 &= \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}
+             = \frac{\partial G_{\beta}}{\partial x_2^{\beta}}\\
   \label{eqn:chempot2}
-  \therefore \frac{\partial G_A}{\partial x_2^A} &= \frac{\partial G_B}{\partial x_2^B}
+  \therefore \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}
+          &= \frac{\partial G_{\beta}}{\partial x_2^{\beta}}
 \end{align}
-This represents equality of chemical potential of component 2.
-
-Subtracting Eqn.~\ref{eqn:2el5}$-$\ref{eqn:2el6} gives
+This represents equality of chemical potential of component 2. Solving
+Eqns.~\ref{eqn:2el5}$~\&~$\ref{eqn:2el6} for $\lambda_3$, after substituting
+Eqns.~\ref{eqn:chempot1}~\&~\ref{eqn:chempot2}, gives
 
 \begin{align}
-  G_A - \lambda_1(x_1^A - x_1^B) - \lambda_2(x_2^A - x_2^B) &= G_B\\
+  \nonumber
+  \lambda_3 &= G_{\alpha}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}} x_1^{\alpha}
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}} x_2^{\alpha}\\
+             &= G_{\beta}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}} x_1^{\beta}
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}} x_2^{\beta}\\
   \label{eqn:grandpot1}
-  \therefore G_B &= G_A - \frac{\partial G_A}{\partial x_1^A}(x_1^A - x_1^B) - \frac{\partial G_A}{\partial x_2^A}(x_2^A - x_2^B).
+  \therefore
+  G_{\beta} &= G_{\alpha}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}(x_1^{\alpha} - x_1^{\beta})
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}(x_2^{\alpha} - x_2^{\beta}).
 \end{align}
 This represents equality of the grand potential of phases A and B.
 
-The fourth equation comes from combining the three constraints to recover the lever rule:
+Substituting Eqn.~\ref{eqn:2el9} into Eqns.~\ref{eqn:2el7}~\&~\ref{eqn:2el8}
+gives
 
 \begin{align}
-  x_1 = f_A x_1^A + (1 - f_A) x_1^B &= f_A(x_1^A - x_1^B) + x_1^B\\
-  x_2 = f_A x_2^A + (2 - f_A) x_2^B &= f_A(x_2^A - x_2^B) + x_2^B\\
+  x_1 &= v_{\alpha} x_1^{\alpha} + (1 - v_{\alpha}) x_1^{\beta}\\
+  x_2 &= v_{\alpha} x_2^{\alpha} + (1 - v_{\alpha}) x_2^{\beta}
+\end{align}
+Solving for $v_{\alpha}$ gives us the ternary Lever Rule:
+\begin{align}
+  \nonumber
+  v_{\alpha} &= \frac{x_1 - x_1^{\beta}}{x_1^{\alpha} - x_1^{\beta}}\\
+             &= \frac{x_2 - x_2^{\beta}}{x_2^{\alpha} - x_2^{\beta}}\\
   \label{eqn:lever}
-  \therefore \frac{x_1 - x_1^B}{x_1^A - x_1^B} &= \frac{x_2 - x_2^B}{x_2^A - x_2^B}.
+  \therefore \frac{x_1 - x_1^{\beta}}{x_1^{\alpha} - x_1^{\beta}}
+          &= \frac{x_2 - x_2^{\beta}}{x_2^{\alpha} - x_2^{\beta}}.
 \end{align}
 
 The system of Eqns.~\ref{eqn:chempot1}, \ref{eqn:chempot2}, \ref{eqn:grandpot1}
 \& \ref{eqn:lever} can be solved to determine the two unknown composition pairs
 needed to specify the equilibrium tie line containing the points
-$G_A(x_1^A,x_2^A)$, $G(x_1,x_2)$, and $G_B(x_1^B,x_2^B)$.
+$G_{\alpha}(x_1^{\alpha},x_2^{\alpha})$, $G(x_1,x_2)$, and
+$G_{\beta}(x_1^{\beta},x_2^{\beta})$.
 
 \newpage
 \section*{Ternary Three-Phase}
 
-We seek to minimize the free energy of the total system with three constraints:
+Consider a ternary system with three phases, the free energies of which are
+defined by the functions $G_{\alpha}(x_1, x_2)$, $G_{\beta}(x_1, x_2)$, and
+$G_{\gamma}(x_1, x_2)$. The system will have volume fraction $v_{\alpha}$ of
+phase $\alpha$, $v_{\beta}$ of phase $\beta$, and $v_{\gamma}$ of phase
+$\gamma$. We seek to determine the equilibrium phase compositions
+($x_1^{\alpha}, x_2^{\alpha}, x_1^{\beta}, x_2^{\beta}, x_1^{\gamma},
+x_2^{\gamma}$) and volume fractions that minimize the free energy of the total
+system, subject to three constraints. Like the binary case, we do not make use
+of the constraints directly because three points completely specify the common
+tangent \emph{plane}.
 
 \begin{align}
-  G(x_1^A, x_1^B, x_1^C, x_2^A, x_2^B, x_2^C) &= f_A G_A(x_1^A,x_2^A) + f_B G_B(x_1^B, x_2^B) + f_C G_C(x_1^C, x_2^C\\
-  f_A x_1^A + f_B x_1^B + f_C x_1^C &= x_1\\
-  f_A x_2^A + f_B x_2^B + f_C x_2^C &= x_2\\
-  f_A + f_B + f_C &= 1
+  G(x_1^{\alpha}, x_1^{\beta}, x_1^{\gamma}, x_2^{\alpha}, x_2^{\beta}, x_2^{\gamma})
+  &= v_{\alpha} G_{\alpha}(x_1^{\alpha},x_2^{\alpha})
+    + v_{\beta} G_{\beta}(x_1^{\beta}, x_2^{\beta})
+    + v_{\gamma} G_{\gamma}(x_1^{\gamma}, x_2^{\gamma})\\
+  v_{\alpha} x_1^{\alpha} + v_{\beta} x_1^{\beta} + v_{\gamma} x_1^{\gamma} &= x_1\\
+  v_{\alpha} x_2^{\alpha} + v_{\beta} x_2^{\beta} + v_{\gamma} x_2^{\gamma} &= x_2\\
+  v_{\alpha} + v_{\beta} + v_{\gamma} &= 1
 \end{align}
-where A and B label phases, 1 and 2 label components, $x_1$ and $x_2$ are the system compositions,
-and compositions with labels $x_i^j$ represent the composition of component $i$ in phase $j$.
-The integrand is
+where $x_1$ and $x_2$ are the system compositions. The integrand is
 
 \begin{align}
   \nonumber
-  \mathcal{L}(x_1^A, x_1^B, x_1^C, x_2^A, x_2^B, x_2^C)
-                         &= f_A G_A(x_1^A, x_2^A) + f_B G_B(x_1^B, x_2^B) + f_B G_C(x_1^C, x_2^C)\\
+  F(x_1^{\alpha}, x_1^{\beta}, x_1^{\gamma}, x_2^{\alpha}, x_2^{\beta}, x_2^{\gamma})
+  &= v_{\alpha} G_{\alpha}(x_1^{\alpha}, x_2^{\alpha})
+   + v_{\beta} G_{\beta}(x_1^{\beta}, x_2^{\beta})
+   + v_{\beta} G_{\gamma}(x_1^{\gamma}, x_2^{\gamma})\\
   \nonumber
-                         &- \lambda_1(f_A x_1^A + f_B x_1^B + f_C x_1^C - x_1)\\
+  &- \lambda_1(v_{\alpha} x_1^{\alpha} + v_{\beta} x_1^{\beta} + v_{\gamma} x_1^{\gamma} - x_1)\\
   \nonumber
-                         &- \lambda_2(f_A x_2^A + f_B x_2^B + f_C x_2^C - x_2)\\
-                         &- \lambda_3(f_A + f_B + f_C - 1)
+  &- \lambda_2(v_{\alpha} x_2^{\alpha} + v_{\beta} x_2^{\beta} + v_{\gamma} x_2^{\gamma} - x_2)\\
+  &- \lambda_3(v_{\alpha} + v_{\beta} + v_{\gamma} - 1)
 \end{align}
-
 The system of Euler-Lagrange Equations becomes
 
 \begin{align}
   \label{eqn:3el1}
-  \frac{\partial\mathcal{L}}{\partial x_1^A} = 0 &= f_A \frac{\partial G_A}{\partial x_1^A} - \lambda_1 f_A\\
+  \frac{\partial F}{\partial x_1^{\alpha}} = 0
+  &= v_{\alpha} \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}} - \lambda_1 v_{\alpha}\\
   \label{eqn:3el2}
-  \frac{\partial\mathcal{L}}{\partial x_1^B} = 0 &= f_B \frac{\partial G_B}{\partial x_1^B} - \lambda_1 f_B\\
+  \frac{\partial F}{\partial x_1^{\beta}} = 0
+  &= v_{\beta} \frac{\partial G_{\beta}}{\partial x_1^{\beta}} - \lambda_1 v_{\beta}\\
   \label{eqn:3el3}
-  \frac{\partial\mathcal{L}}{\partial x_1^C} = 0 &= f_C \frac{\partial G_C}{\partial x_1^C} - \lambda_1 f_C\\
+  \frac{\partial F}{\partial x_1^{\gamma}} = 0
+  &= v_{\gamma} \frac{\partial G_{\gamma}}{\partial x_1^{\gamma}} - \lambda_1 v_{\gamma}\\
   \label{eqn:3el4}
-  \frac{\partial\mathcal{L}}{\partial x_2^A} = 0 &= f_A \frac{\partial G_A}{\partial x_2^A} - \lambda_2 f_A\\
+  \frac{\partial F}{\partial x_2^{\alpha}} = 0
+  &= v_{\alpha} \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}} - \lambda_2 v_{\alpha}\\
   \label{eqn:3el5}
-  \frac{\partial\mathcal{L}}{\partial x_2^B} = 0 &= f_B \frac{\partial G_B}{\partial x_2^B} - \lambda_2 f_B\\
+  \frac{\partial F}{\partial x_2^{\beta}} = 0
+  &= v_{\beta} \frac{\partial G_{\beta}}{\partial x_2^{\beta}} - \lambda_2 v_{\beta}\\
   \label{eqn:3el6}
-  \frac{\partial\mathcal{L}}{\partial x_2^C} = 0 &= f_C \frac{\partial G_C}{\partial x_2^C} - \lambda_2 f_C\\
+  \frac{\partial F}{\partial x_2^{\gamma}} = 0
+  &= v_{\gamma} \frac{\partial G_{\gamma}}{\partial x_2^{\gamma}} - \lambda_2 v_{\gamma}\\
   \label{eqn:3el7}
-  \frac{\partial\mathcal{L}}{\partial f_A} = 0 &= G_A - \lambda_1 x_1^A - \lambda_2 x_2^A - \lambda_3\\
+  \frac{\partial F}{\partial v_{\alpha}} = 0
+  &= G_{\alpha} - \lambda_1 x_1^{\alpha} - \lambda_2 x_2^{\alpha} - \lambda_3\\
   \label{eqn:3el8}
-  \frac{\partial\mathcal{L}}{\partial f_B} = 0 &= G_B - \lambda_1 x_1^B - \lambda_2 x_2^B - \lambda_3\\
+  \frac{\partial F}{\partial v_{\beta}} = 0
+  &= G_{\beta} - \lambda_1 x_1^{\beta} - \lambda_2 x_2^{\beta} - \lambda_3\\
   \label{eqn:3el9}
-  \frac{\partial\mathcal{L}}{\partial f_C} = 0 &= G_C - \lambda_1 x_1^C - \lambda_2 x_2^C - \lambda_3
+  \frac{\partial F}{\partial v_{\gamma}} = 0
+  &= G_{\gamma} - \lambda_1 x_1^{\gamma} - \lambda_2 x_2^{\gamma} - \lambda_3
 \end{align}
-
-Assuming non-zero $f_A$ and $f_B$ (to prevent division by zero), combining Eqns.~\ref{eqn:3el1}~\&~\ref{eqn:3el2}
-and Eqns.~\ref{eqn:3el1}~\&~\ref{eqn:3el3} gives
+Solving Eqns.~\ref{eqn:3el1},~\ref{eqn:3el2}~\&~\ref{eqn:3el3}
+for $\lambda_1$ gives
 
 \begin{align}
-  \lambda_1 &= \frac{\partial G_A}{\partial x_1^A} = \frac{\partial G_B}{\partial x_1^B} = \frac{\partial G_C}{\partial x_1^C}\\
+  \lambda_1 &= \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}
+             = \frac{\partial G_{\beta}}{\partial x_1^{\beta}}
+             = \frac{\partial G_{\gamma}}{\partial x_1^{\gamma}}\\
   \label{eqn:3chempot1a}
-  \therefore \frac{\partial G_A}{\partial x_1^A} &= \frac{\partial G_B}{\partial x_1^B}\\
+  \therefore \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}
+          &= \frac{\partial G_{\beta}}{\partial x_1^{\beta}}\\
   \label{eqn:3chempot1b}
-             \frac{\partial G_A}{\partial x_1^A} &= \frac{\partial G_C}{\partial x_1^C}
+             \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}
+          &= \frac{\partial G_{\gamma}}{\partial x_1^{\gamma}}
 \end{align}
-Eqns.~\ref{eqn:3chempot1a}~\&~\ref{eqn:3chempot1b} represent equality of chemical potential of component 1
-in pairs of phases $A-B$ and $A-C$. Similarly, combining Eqns.~\ref{eqn:3el4}~\&~\ref{eqn:3el5}
-and Eqns.~\ref{eqn:3el5}~\&~\ref{eqn:3el6} gives
+Eqns.~\ref{eqn:3chempot1a}~\&~\ref{eqn:3chempot1b} represent equality of
+chemical potential of component 1 in pairs of phases $\alpha-\beta$ and
+$\alpha-\gamma$. Similarly, solving
+Eqns.~\ref{eqn:3el4},~\ref{eqn:3el5},~\&~\ref{eqn:3el6} for $\lambda_2$ gives
 
 \begin{align}
-  \lambda_2 &= \frac{\partial G_A}{\partial x_2^A} = \frac{\partial G_B}{\partial x_2^B} = \frac{\partial G_C}{\partial x_2^C}\\
+  \lambda_2 &= \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}
+             = \frac{\partial G_{\beta}}{\partial x_2^{\beta}}
+             = \frac{\partial G_{\gamma}}{\partial x_2^{\gamma}}\\
   \label{eqn:3chempot2a}
-  \therefore \frac{\partial G_A}{\partial x_2^A} &= \frac{\partial G_B}{\partial x_2^B}\\
+  \therefore \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}
+          &= \frac{\partial G_{\beta}}{\partial x_2^{\beta}}\\
   \label{eqn:3chempot2b}
-             \frac{\partial G_A}{\partial x_2^A} &= \frac{\partial G_C}{\partial x_2^C}
+             \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}
+          &= \frac{\partial G_{\gamma}}{\partial x_2^{\gamma}}
 \end{align}
-Eqns.~\ref{eqn:3chempot2a}~\&~\ref{eqn:3chempot2b} represent equality of chemical potential of component 2
-in pairs of phases $A-B$ and $A-C$. Taking the differences between Eqns.~\ref{eqn:3el7}$-$\ref{eqn:3el8}
-and Eqns.~\ref{eqn:3el7}$-$\ref{eqn:3el9} gives
+Eqns.~\ref{eqn:3chempot2a}~\&~\ref{eqn:3chempot2b} represent equality of
+chemical potential of component 2 in pairs of phases $\alpha-\beta$ and
+$\alpha-\gamma$. Solving Eqns.~\ref{eqn:3el7},~\ref{eqn:3el8}~\&~\ref{eqn:3el9}
+for $\lambda_3$ gives
 
 \begin{align}
+  \lambda_3 &= G_{\alpha}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}} x_1^{\alpha}
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}} x_2^{\alpha}
+             = G_{\beta}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}} x_1^{\beta}
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}} x_2^{\beta}
+             = G_{\gamma}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}} x_1^{\gamma}
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}} x_2^{\gamma}\\
   \label{eqn:3grandpot1}
-  G_B &= G_A - \frac{\partial G_A}{\partial x_1^A}(x_1^A - x_1^B) - \frac{\partial G_A}{\partial x_2^A}(x_2^A - x_2^B)\\
+  \therefore G_{\beta} &= G_{\alpha}
+             - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}(x_1^{\alpha} - x_1^{\beta})
+             - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}(x_2^{\alpha} - x_2^{\beta})\\
   \label{eqn:3grandpot2}
-  G_C &= G_A - \frac{\partial G_A}{\partial x_1^A}(x_1^A - x_1^C) - \frac{\partial G_A}{\partial x_2^A}(x_2^A - x_2^C)
+  G_{\gamma} &= G_{\alpha}
+              - \frac{\partial G_{\alpha}}{\partial x_1^{\alpha}}(x_1^{\alpha} - x_1^{\gamma})
+              - \frac{\partial G_{\alpha}}{\partial x_2^{\alpha}}(x_2^{\alpha} - x_2^{\gamma})
 \end{align}
-These represent equality of the grand potentials between pairs of phases $A-B$ and $A-C$.
+These represent equality of the grand potentials between pairs of phases $\alpha-\beta$ and
+$\alpha-\gamma$.
 
-\begin{itemize}
-  \item The system of Eqns.~\ref{eqn:3chempot1a}, \ref{eqn:3chempot1b},
-        \ref{eqn:3chempot2a}, \ref{eqn:3chempot2b}, \ref{eqn:3grandpot1} \&
-        \ref{eqn:3grandpot2} represents 6 equations for 6 unknowns, which can
-        be solved for the equilibrium plane containing the points
-        $G_A(x_1^A,x_2^A)$, $G(x_1,x_2)$, $G_B(x_1^B,x_2^B)$ and $G_C(x_1^C,x_2^C)$
-  \item This will \emph{only} find the plane of 3-phase coexistence. Any other
-        points will need to be found using the 2-phase ternary system of equations.      
-\end{itemize}
+The system of Eqns.~\ref{eqn:3chempot1a}, \ref{eqn:3chempot1b},
+\ref{eqn:3chempot2a}, \ref{eqn:3chempot2b}, \ref{eqn:3grandpot1} \&
+\ref{eqn:3grandpot2} represents 6 equations for 6 unknowns, which can be solved
+for the equilibrium plane containing the points
+$G_{\alpha}(x_1^{\alpha},x_2^{\alpha}), G_{\beta}(x_1^{\beta},x_2^{\beta})$ and
+$G_{\gamma}(x_1^{\gamma},x_2^{\gamma})$.
 
+\section*{Put it All Together}
 
+The code accompanying this document generates the equilibrium isothermobaric
+(constant $T$ and $P$) phase diagram for a ternary alloy with three phases. The
+program iterates through system compositions $(x_1, x_2)$ in the Gibbs simplex.
+At each test point, test energies are computed for
+\begin{enumerate}
+  \item $G_{\alpha}(x_1, x_2)$
+  \item $G_{\beta}(x_1, x_2)$
+  \item $G_{\gamma}(x_1, x_2)$
+  \item $G_{\alpha\beta} = v_{\alpha}G_{\alpha}(x_1^{\alpha}, x_2^{\alpha})
+                         + v_{\beta}G_{\beta}(x_1^{\beta}, x_2^{\beta})$
+  \item $G_{\alpha\gamma} = v_{\alpha}G_{\alpha}(x_1^{\alpha}, x_2^{\alpha})
+                          + v_{\gamma}G_{\gamma}$
+  \item $G_{\beta\gamma} = v_{\beta}G_{\beta}(x_1^{\beta}, x_2^{\beta})
+                         + v_{\gamma}G_{\gamma}(x_1^{\gamma}, x_2^{\gamma})$
+  \item $G_{\alpha\beta\gamma} = v_{\alpha}G_{\alpha}(x_1^{\alpha}, x_2^{\alpha})
+                               + v_{\beta}G_{\beta}(x_1^{\beta}, x_2^{\beta})
+                               + v_{\gamma}G_{\gamma}(x_1^{\gamma}, x_2^{\gamma})$
+\end{enumerate}
+The equilibrium phases and compositions corresponding to the system composition
+$(x_1, x_2)$ are those corresponding to the minimum energy represented in that
+set of 7 possibilities, subject to the constraint that all endpoints must lie
+within the Gibbs simplex.
+  
 \end{document}
