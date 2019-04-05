@@ -5,7 +5,8 @@ thermodynamic phase diagram for a ternary alloy system containing two or three
 phases.
 
 ![example-diagram](example-diagram.png)
-*An example of a ternary phase diagram*
+
+*A ternary phase diagram, for example.*
 
 A Makefile is provided to build both the documentation and a shared library
 required to efficiently crunch the numbers. The
@@ -17,7 +18,11 @@ required to efficiently crunch the numbers. The
 - To use the Makefile, you will need [make](https://www.gnu.org/software/make/).
 - To build the derivation, you will need a LaTeX distribution.
 - To build the shared library, you will need a scientific Python distribution
-  with sympy and tqdm, both of which can be pip-installed.
+  (*e.g.*, [Anaconda](https://store.continuum.io/cshop/anaconda/),
+  [Canopy](https://enthought.com/products/canopy/),
+  [Python(x,y)](https://python-xy.github.io/)) and
+  [sympy](https://www.sympy.org), which is available from
+  [GitHub](https://github.com/sympy/sympy) or PyPI (`pip install sympy`).
 
 ## Usage
 
@@ -36,7 +41,7 @@ This triggers a three-stage process:
     ```
 2. Compile the C expressions to a shared library:
     ```bash
-    $ 	gcc -Wall -fPIC -shared paraboloids.c -o paraboloids.so
+    $ gcc -Wall -fPIC -shared paraboloids.c -o paraboloids.so
     ```
 3. Execute [phase-diagram.py](phase-diagram.py) to draw the pretty picture:
     ```bash
