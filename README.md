@@ -21,8 +21,9 @@ required to efficiently crunch the numbers. The
   (*e.g.*, [Anaconda](https://store.continuum.io/cshop/anaconda/),
   [Canopy](https://enthought.com/products/canopy/),
   [Python(x,y)](https://python-xy.github.io/)) and
-  [sympy](https://www.sympy.org), which is available from
-  [GitHub](https://github.com/sympy/sympy) or PyPI (`pip install sympy`).
+  [SymPy](https://www.sympy.org), which is available from
+  [GitHub](https://github.com/sympy/sympy) or
+  [PyPI](https://pypi.org/project/sympy/) (`pip install sympy`).
 
 ## Usage
 
